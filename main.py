@@ -50,7 +50,7 @@ print(banned_foods_dict)
 
 # Get their favourite drinks
 preferred_drinks = [[drink for drink in user["drinks"]] for user in all_users if user["name"] in args] 
-preferred_drinks_flattened = list(chain.from_iterable(preffered_drinks))
+preferred_drinks_flattened = list(chain.from_iterable(preferred_drinks))
 
 # Create dict to map drink preferences to team members
 preferred_drinks_dict = {drink: [] for drink in preferred_drinks_flattened}
@@ -58,9 +58,23 @@ preferred_drinks_dict = {drink: [] for drink in preferred_drinks_flattened}
 for user, details in filtered_users.items():
     for drink in details["drinks"]:
         if drink in preferred_drinks_flattened:
-            preferred_drinks_dict[food].append(user)
+            preferred_drinks_dict[drink].append(user)
 
 print(preferred_drinks_dict)
+
+
+venues_response = {"places_to_visit": [],
+                    "places_to_avoid:"[
+                    ]}
+
+avoid_venue_dict = {
+    "name": "",
+    "reason": []
+}
+
+
+
+
 
 
 #users_foods = {user["wont_eat"] for user in all_users if user["name"] in args}

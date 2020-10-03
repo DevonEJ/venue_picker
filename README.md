@@ -12,6 +12,7 @@ The purpose of this programme is to simplify choosing a place to go for food and
 - From the command line, in the project root, run the following:
     - ```python3 main.py 'FirstName LastName' 'FirstName LastName'```
     - The names must be names of valid team members - e.g. ```python3 main.py 'Tom Mullen' 'Rosie Curran'```
+    - If you aren't sure what a valid team member name is - feel free to enter ```python3 main.py 'help'``` for a hint
     - You may also run ```python3 main.py 'everyone'``` to select all team members
 
 ## To Run the Tests

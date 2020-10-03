@@ -3,7 +3,7 @@ import sys
 import getopt
 import copy
 from itertools import chain
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Tuple
 
 
 #TODO - Docstrings
@@ -82,44 +82,69 @@ def create_preferred_drinks_dict(desired_key: str, desired_value: str, args: Dic
 
 
 
-
-venues_food_pass = [] 
-venues_drink_pass = [] 
-venues_failing = []
-# Filter venues by foods first
-for venue in all_venues:
-
-    venue_result = copy.deepcopy(avoid_venue_dict)
-
-    problem_foods = list(set(venue["food"]) & set(banned_foods_dict.keys()))
-
-    if len(problem_foods) > 0:
-        for food in problem_foods:
-            for user in banned_foods_dict[food]:
-                reason = f"There is nothing for {user} to eat."
-                venue_result["name"] = venue["name"]
-                venue_result["reason"].append(reason)
-        else:
-            venues_food_pass.append(venue["name"])
+# FOR EACH VENUE, NEEDS TO BE USED FOR BOTH DRINKS AND FOOD
+def create_empty_venue_result_dict() -> Dict[str, Any]:
+    avoid_venue_dict = {
+        "name": "",
+        "reason": []
+    }
+    return copy.deepcopy(avoid_venue_dict)
 
 
-#     # First eliminate drinks that none of the users want to drink
-#     venue_drinks = [drink for drink in venue["drinks"] if drink in preferred_drinks_dict.keys()]
+def evaluate_venues_for_food(banned_foods_dict: Dict[str, List[str]], preferred_drinks_dict: Dict[str, List[str]], all_venues: Dict[str, Any], filtered_users: Dict[str, Any]) -> Tuple[List[Dict], List[str], List[str]]:
+    """
+    """
+    venues_food_pass = [] 
+    venues_drink_pass = [] 
 
-#     for drink in venue_drinks:
-#         # If all users are ok with this drink, then this venue passes on drinks
-#         if len(preferred_drinks_dict[drink]) == len(filtered_users.keys()):
-#             # IF NOT ALRAEDY IN FOOD FAIL LIST
-#             venues_drink_pass.append(venue["name"])
-#         else:
-#             drinkless_users = filtered_users.keys() - preferred_drinks_dict[drink]
-#             reason = f"There is nothing for {user} to drink."
-#             # IF NOT ALRAEDY IN FOOD FAIL LIST
-#             result = copy.deepcopy(avoid_venue_dict)
-#             venue_result["name"] = venue["name"]
-#             venue_result["reason"].append(reason)
+    venues_failing = []
 
-#     venues_failing.append(venue_result)
+    # Filter venues by foods first
+    for venue in all_venues:
+
+        venue_result = create_empty_venue_result_dict()
+
+        problem_foods = list(set(venue["food"]) & set(banned_foods_dict.keys()))
+
+        if len(problem_foods) > 0:
+            for food in problem_foods:
+                for user in banned_foods_dict[food]:
+                    reason = f"There is nothing for {user} to eat."
+                    print(reason)
+                    venue_result["name"] = venue["name"]
+                    venue_result["reason"].append(reason)
+            else:
+                venues_food_pass.append(venue["name"])
+
+
+        # First eliminate drinks that none of the users want to drink
+        venue_drinks = [drink for drink in venue["drinks"] if drink in preferred_drinks_dict.keys()]
+
+        print(venue_drinks)
+
+        for drink in venue_drinks:
+            # If all users are ok with this drink, then this venue passes on drinks
+            if len(preferred_drinks_dict[drink]) == len(filtered_users.keys()):
+                venues_drink_pass.append(venue["name"])
+            else:
+                drinkless_users = filtered_users.keys() - preferred_drinks_dict[drink]
+
+                for user in drinkless_users:
+                    reason = f"There is nothing for {user} to drink."
+                    print(reason)
+                    venue_result["name"] = venue["name"]
+                    venue_result["reason"].append(reason)
+
+        venues_failing.append(venue_result)
+
+    return venues_failing, venues_drink_pass, venues_food_pass
+
+
+def create_response():
+    """
+    """
+    
+
 
 
 # #passing_venues = venues_drink_pass.intersection(venues_food_pass)
@@ -142,6 +167,7 @@ for venue in all_venues:
 # # TODO - Are there any errors in the input files?
 # #TODO - add a help script
 # #TODO - Add main function
+# TODO - Chcek consistency of var names e.g. for dicts
 
 if __name__ == "__main__":
 
@@ -157,22 +183,25 @@ if __name__ == "__main__":
 
     filtered_users = filter_users_by_name(args, all_users)
 
-    print(filtered_users)
-
     banned_foods_dict = create_banned_foods_dict("wont_eat", "name", args, all_users, filtered_users)
-    print(banned_foods_dict)
 
     preferred_drinks_dict = create_preferred_drinks_dict("drinks", "name", args, all_users, filtered_users)
-    print(preferred_drinks_dict)
+
+    failing_venues, venues_drinks_pass, venues_food_pass = evaluate_venues_for_food(banned_foods_dict, preferred_drinks_dict, all_venues, filtered_users)
+
+
+
+
+    print(failing_venues)
+    print(venues_drinks_pass)
+    print(venues_food_pass)
+
 
 
     venues_response = {"places_to_visit": [],
                     "places_to_avoid":[]}
+                
 
-    avoid_venue_dict = {
-        "name": "",
-        "reason": []
-    }
 
 
     print("Done.")

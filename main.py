@@ -8,32 +8,46 @@ from typing import Dict, List, Any, Tuple
 
 #TODO - Docstrings
 
-def retrieve_json_from_file(file_path:str ) -> List[Dict]:
+
+def clean_input(input_dict: Dict[str, Any], keys: List[str]) -> Dict[str, Any]:
+    for key in keys:
+        clean_values = [value.lower() for value in input_dict[key] if value is not '']
+        input_dict[key] = clean_values
+    return input_dict
+
+
+def retrieve_json_from_file(file_path:str, food_key: str) -> List[Dict]:
     """
     """
     try:
         with open(file_path, "r") as inputs:
             data = json.load(inputs)
+            # Lower case all food and drink names for consistency
+            clean_data = []
+            for row in data:
+                row = clean_input(row, ["drinks", food_key])
+                clean_data.append(row)
             inputs.close()
-            return data
+            return clean_data
     except IOError as e:
         print(f"Unable to read file at path {file_path}: {e}")
 
 
 def validate_args(acceptable_args: List[str], actual_args: List[str]) -> List[str]:
     """
-    """
+    """    
+    if len(actual_args) == 0:
+        print(f"You must enter valid users to find venues for. Choose from: {acceptable_args} or type 'everyone' to take the whole team!")
+        sys.exit(2)
     for arg in actual_args:
         arg = arg.strip()
         if arg == "everyone":
-            print("You're taking the whole team!")
-            break
-        if arg not in acceptable_args:
-            print(f"Sorry, this is not a valid user. You can choose from: {acceptable_args}")
+            actual_args = acceptable_args
+            return actual_args
+        if len(arg) == 0 or arg not in acceptable_args:
+            print(f"Sorry, {arg} is not a valid user. Choose from: {acceptable_args} or type 'everyone' to take the whole team!")
             sys.exit(2)
-        print("Yep, accepted")
         return actual_args
-
 
 def filter_users_by_name(names: List[str], users: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -80,60 +94,62 @@ def create_preferred_drinks_dict(desired_key: str, desired_value: str, args: Dic
     return preferred_drinks_dict
 
 
-
-def create_empty_venue_result_dict() -> Dict[str, Any]:
-    avoid_venue_dict = {
-        "name": "",
-        "reason": []
-    }
-    return copy.deepcopy(avoid_venue_dict)
-
-
-def evaluate_venues_for_food(banned_foods_dict: Dict[str, List[str]], preferred_drinks_dict: Dict[str, List[str]], all_venues: Dict[str, Any], filtered_users: Dict[str, Any]) -> Tuple[List[Dict], List[str], List[str]]:
+def evaluate_venues_for_food_suitability(banned_foods_dict: Dict[str, List[str]], all_venues: Dict[str, Any], failing_venues_reasons_dict: Dict[str, Any], filtered_users: Dict[str, Any]) -> Tuple[List[Dict], List[str], List[str]]:
     """
     """
     venues_food_pass = [] 
-    venues_drink_pass = [] 
-
-    venues_failing = []
 
     # Filter venues by foods first
     for venue in all_venues:
 
-        venue_result = create_empty_venue_result_dict()
-
-        problem_foods = list(set(venue["food"]) & set(banned_foods_dict.keys()))
-
-        if len(problem_foods) > 0:
-            for food in problem_foods:
+        # Foods from the venue left over after subtracting the banned foods
+        acceptable_foods = [food for food in venue["food"] if food not in banned_foods_dict.keys()]
+    
+        if len(acceptable_foods) == 0:
+            for food in acceptable_foods:
                 for user in banned_foods_dict[food]:
                     reason = f"There is nothing for {user} to eat."
-                    print(reason)
-                    venue_result["name"] = venue["name"]
-                    venue_result["reason"].append(reason)
-            else:
-                venues_food_pass.append(venue["name"])
+                    if venue["name"] not in failing_venues_reasons_dict.keys():
+                        failing_venues_reasons_dict[venue["name"]] = []
+                    if reason not in failing_venues_reasons_dict[venue["name"]]:
+                        failing_venues_reasons_dict[venue["name"]].append(reason)
+        else:
+            venues_food_pass.append(venue["name"])
 
+    return failing_venues_reasons_dict, venues_food_pass
+                
+
+
+def evaluate_venues_for_drink_suitability(preferred_drinks_dict: Dict[str, Any], all_venues: Dict[str, Any], failing_venues_reasons_dict: Dict[str, Any], filtered_users: Dict[str, Any]):
+    """
+    """
+    venues_drink_pass = []
+
+    for venue in all_venues:
 
         # First eliminate drinks that none of the users want to drink
         venue_drinks = [drink for drink in venue["drinks"] if drink in preferred_drinks_dict.keys()]
 
+        names = []
         for drink in venue_drinks:
-            # If all users are ok with this drink, then this venue passes on drinks
-            if len(preferred_drinks_dict[drink]) == len(filtered_users.keys()):
-                venues_drink_pass.append(venue["name"])
-            else:
-                drinkless_users = filtered_users.keys() - preferred_drinks_dict[drink]
-                for user in drinkless_users:
-                    reason = f"There is nothing for {user} to drink."
-                    print(reason)
-                    venue_result["name"] = venue["name"]
-                    if reason not in venue_result["reason"]:
-                        venue_result["reason"].append(reason)
+            # Users happy with this venue's drinks - collect their names up
+            names.append(preferred_drinks_dict[drink])
+        # Is everyone accounted for in the 'happy with this venue's drinks' list?
+        names_flattened = set(list(chain.from_iterable(names)))
 
-        venues_failing.append(venue_result)
+        if len(names_flattened) == len(filtered_users.keys()):
+            venues_drink_pass.append(venue["name"])
+        else:
+            drinkless_users = filtered_users.keys() - names_flattened
+            for user in drinkless_users:
+                reason = f"There is nothing for {user} to drink."
+                if venue["name"] not in failing_venues_reasons_dict.keys():
+                        failing_venues_reasons_dict[venue["name"]] = []
+                if reason not in failing_venues_reasons_dict[venue["name"]]:
+                    failing_venues_reasons_dict[venue["name"]].append(reason)
 
-    return venues_failing, venues_drink_pass, venues_food_pass
+    return failing_venues_reasons_dict, venues_drink_pass
+
 
 
 def create_response(venues_passing_food: List[str], venues_passing_drink: List[str], failing_venues: List[Dict[str, Any]]) -> json:
@@ -141,29 +157,32 @@ def create_response(venues_passing_food: List[str], venues_passing_drink: List[s
     """
     passing_venues = list(set(venues_passing_food) & set(venues_passing_drink))
 
+    failures = []
+    for venue, reasons in failing_venues.items():
+        failures.append({
+            "name" :venue,
+            "reasons": reasons 
+        })
+
     venues_response = {"places_to_visit": passing_venues,
-                    "places_to_avoid": failing_venues}
+                    "places_to_avoid": failures}
 
     venues_response_json = json.dumps(venues_response)
 
     return venues_response
 
-
     
-# #TODO - Warn user if a person entered is not in the users list
 # #TODO - add validation for the JSON data format, types etc.
-# #TODO - Add some tests (also for incorrect or no names)
 # # TODO - can you validate the input files against a schema?
 # # TODO - Are there any errors in the input files?
 # #TODO - add a help script
-# #TODO - Add main function
 # TODO - Chcek consistency of var names e.g. for dicts
 
 if __name__ == "__main__":
 
-    all_users = retrieve_json_from_file("./data/users.json")
+    all_users = retrieve_json_from_file("./data/users.json", "wont_eat")
 
-    all_venues = retrieve_json_from_file("./data/venues.json")
+    all_venues = retrieve_json_from_file("./data/venues.json", "food")
 
     user_names = [user["name"] for user in all_users]
 
@@ -175,12 +194,34 @@ if __name__ == "__main__":
 
     banned_foods_dict = create_banned_foods_dict("wont_eat", "name", args, all_users, filtered_users)
 
+    # print("Banned foods:")
+    # print(banned_foods_dict)
+
     preferred_drinks_dict = create_preferred_drinks_dict("drinks", "name", args, all_users, filtered_users)
 
-    failing_venues, venues_drinks_pass, venues_food_pass = evaluate_venues_for_food(banned_foods_dict, preferred_drinks_dict, all_venues, filtered_users)
+    # print("preferred drinks:")
+    # print(preferred_drinks_dict)
 
-    response = create_response(venues_food_pass, venues_drinks_pass, failing_venues)
+    failing_venues_reasons_dict = {}
+
+    # failing_venues, venues_drinks_pass, venues_food_pass = 
+    failing_venues_reasons_dict, venues_passing_food = evaluate_venues_for_food_suitability(banned_foods_dict, all_venues, failing_venues_reasons_dict, filtered_users)
+
+
+    failing_venues_reasons_dict, venues_passing_drink = evaluate_venues_for_drink_suitability(preferred_drinks_dict, all_venues, failing_venues_reasons_dict, filtered_users)
+
+
+
+   # print(failing_venues_reasons_dict)
+    print(venues_passing_drink)
+    print(venues_passing_food)
+
+
+    # print(venues_drinks_pass)
+    # print(venues_food_pass)
+    # print(failing_venues)
+
+    response = create_response(venues_passing_food, venues_passing_drink, failing_venues_reasons_dict)
 
     print(json.dumps(response, indent=3))
 
-    print("Done.")

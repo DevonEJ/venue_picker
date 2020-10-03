@@ -16,7 +16,7 @@ def clean_input(input_dict: Dict[str, Any], keys: List[str]) -> Dict[str, Any]:
     return input_dict
 
 
-def retrieve_json_from_file(file_path:str, food_key: str) -> List[Dict]:
+def retrieve_json_from_file(file_path:str, keys: List[str]) -> List[Dict]:
     """
     """
     try:
@@ -25,7 +25,7 @@ def retrieve_json_from_file(file_path:str, food_key: str) -> List[Dict]:
             # Lower case all food and drink names for consistency
             clean_data = []
             for row in data:
-                row = clean_input(row, ["drinks", food_key])
+                row = clean_input(row, keys)
                 clean_data.append(row)
             inputs.close()
             return clean_data
@@ -171,20 +171,13 @@ def create_response(venues_passing_food: List[str], venues_passing_drink: List[s
 
     return venues_response
 
-    
-# #TODO - add validation for the JSON data format, types etc.
-# # TODO - can you validate the input files against a schema?
-# # TODO - Are there any errors in the input files?
-# #TODO - add a help script
-# TODO - Chcek consistency of var names e.g. for dicts
+
 
 if __name__ == "__main__":
 
-    all_users = retrieve_json_from_file("./data/users.json", "wont_eat")
+    all_users = retrieve_json_from_file("./data/users.json", ["drinks", "wont_eat"])
 
-    all_venues = retrieve_json_from_file("./data/venues.json", "food")
-
-    # print(all_venues)
+    all_venues = retrieve_json_from_file("./data/venues.json", ["food", "drinks"])
 
     user_names = [user["name"] for user in all_users]
 
@@ -194,35 +187,17 @@ if __name__ == "__main__":
 
     filtered_users = filter_users_by_name(args, all_users)
 
-    print(filtered_users)
-
     banned_foods_dict = create_banned_foods_dict("wont_eat", "name", args, all_users, filtered_users)
-
-    # print("Banned foods:")
-    print(banned_foods_dict)
 
     preferred_drinks_dict = create_preferred_drinks_dict("drinks", "name", args, all_users, filtered_users)
 
-    # print("preferred drinks:")
-    print(preferred_drinks_dict)
-
     failing_venues_reasons_dict = {}
 
-    # failing_venues, venues_drinks_pass, venues_food_pass = 
     failing_venues_reasons_dict, venues_passing_food = evaluate_venues_for_food_suitability(banned_foods_dict, all_venues, failing_venues_reasons_dict, filtered_users)
 
-    # print(failing_venues_reasons_dict)
-    # print(venues_passing_food)
-
-    failing_venues_reasons_dict, venues_passing_drink = evaluate_venues_for_drink_suitability(preferred_drinks_dict, all_venues, failing_venues_reasons_dict, filtered_users)
-
-
-    print(failing_venues_reasons_dict)
-    print(venues_passing_drink)
-    # print(venues_passing_food)
-
+    failing_venues_reasons_dict, venues_passing_drink = evaluate_venues_for_drink_suitability(preferred_drinks_dict, all_venues, failing_venues_reasons_dict, filtered_users)  
 
     response = create_response(venues_passing_food, venues_passing_drink, failing_venues_reasons_dict)
 
-    # print(json.dumps(response, indent=3))
+    print(json.dumps(response, indent=3))
 

@@ -63,9 +63,6 @@ def filter_users_by_name(names: List[str], users: Dict[str, Any]) -> Dict[str, A
     return filtered_users
 
 
-# TODO - These could probably be the same function - just think about variable naming
-
-
 def create_banned_foods_dict(
     desired_key: str,
     desired_value: str,

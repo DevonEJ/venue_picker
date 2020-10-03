@@ -118,20 +118,18 @@ def evaluate_venues_for_food(banned_foods_dict: Dict[str, List[str]], preferred_
         # First eliminate drinks that none of the users want to drink
         venue_drinks = [drink for drink in venue["drinks"] if drink in preferred_drinks_dict.keys()]
 
-        print(venue_drinks)
-
         for drink in venue_drinks:
             # If all users are ok with this drink, then this venue passes on drinks
             if len(preferred_drinks_dict[drink]) == len(filtered_users.keys()):
                 venues_drink_pass.append(venue["name"])
             else:
                 drinkless_users = filtered_users.keys() - preferred_drinks_dict[drink]
-
                 for user in drinkless_users:
                     reason = f"There is nothing for {user} to drink."
                     print(reason)
                     venue_result["name"] = venue["name"]
-                    venue_result["reason"].append(reason)
+                    if reason not in venue_result["reason"]:
+                        venue_result["reason"].append(reason)
 
         venues_failing.append(venue_result)
 
@@ -150,17 +148,6 @@ def create_response(venues_passing_food: List[str], venues_passing_drink: List[s
 
     return venues_response
 
-
-
-    
-
-
-# print("Failing venues:")
-# print(venues_failing)
-# # print("Passing venues on drink:")
-# # print(set(venues_drink_pass))           
-# # print("Passing venues on food:")
-# # print(set(venues_food_pass))
 
     
 # #TODO - Warn user if a person entered is not in the users list

@@ -14,7 +14,7 @@ The purpose of this programme is to simplify choosing a place to go for food and
     - The names must be names of valid team members - e.g. ```python3 main.py 'Tom Mullen' 'Rosie Curran'```
     - You may also run ```python3 main.py 'everyone'``` to select all team members
 
-## To RUun the Tests
+## To Run the Tests
 - Make sure you have created your virtual environment and installed everything in the requirements.txt file
 - Then, from the root directory, run ```pytest test.py``` 
 

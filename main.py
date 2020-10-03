@@ -44,7 +44,6 @@ for user, details in filtered_users.items():
         if food in banned_foods_flattened:
             banned_foods_dict[food].append(user)
 
-print(banned_foods_dict)
     
 
 # SORT OUT THE DRINKS
@@ -61,7 +60,6 @@ for user, details in filtered_users.items():
         if drink in preferred_drinks_flattened:
             preferred_drinks_dict[drink].append(user)
 
-print(preferred_drinks_dict)
 
 
 venues_response = {"places_to_visit": [],
@@ -74,6 +72,9 @@ avoid_venue_dict = {
 
 venues_food_pass = [] 
 venues_food_fail = [] 
+
+venues_drink_pass = [] 
+venues_drink_fail = []
 # Filter venues by foods first
 for venue in all_venues:
 
@@ -85,63 +86,60 @@ for venue in all_venues:
         for food in problem_foods:
             for user in banned_foods_dict[food]:
                 reason = f"There is nothing for {user} to eat."
-                print(reason)
                 result = copy.deepcopy(avoid_venue_dict)
                 result["name"] = venue["name"]
                 result["reason"].append(reason)
                 venues_food_fail.append(result)
         else:
-            print(f"Current food not in banned_foods")
             venues_food_pass.append(venue["name"])
 
 
-    # venue_drinks = set(venue["drinks"])
+    # First eliminate drinks that none of the users want to drink
+    venue_drinks = [drink for drink in venue["drinks"] if drink in preferred_drinks_dict.keys()]
 
-    # problem_foods = venue_foods.intersection(set(banned_foods_dict.keys()))
+    for drink in venue_drinks:
+        # If all users are ok with this drink, then this venue passes on drinks
+        if len(preferred_drinks_dict[drink]) == len(filtered_users.keys()):
+            # IF NOT ALRAEDY IN FOOD FAIL LIST
+            print(f"Current drink is preferred by all users")
+            venues_drink_pass.append(venue["name"])
+        else:
+            drinkless_users = filtered_users.keys() - preferred_drinks_dict[drink]
+            print(f"These are drinkless users: {drinkless_users}")
+            reason = f"There is nothing for {user} to drink."
+            # IF NOT ALRAEDY IN FOOD FAIL LIST
+            result = copy.deepcopy(avoid_venue_dict)
+            result["name"] = venue["name"]
+            result["reason"].append(reason)
+            venues_drink_fail.append(result)
+
+
+        
 
 
 
-print(venues_food_fail)
-print("Passing venues:")
-print(set(venues_food_pass))
+    #     drinkless_users = banned_foods_dict.keys() - venue["drinks"]
+    #     print(drinkless_users)
+
+    #     for user in drinkless_users:
+            reason = f"There is nothing for {user} to drink."
+            # IF NOT ALRAEDY IN FOOD FAIL LIST
+            result = copy.deepcopy(avoid_venue_dict)
+            result["name"] = venue["name"]
+            result["reason"].append(reason)
+            venues_drink_fail.append(result)
 
 
+# print(venues_drink_fail)
+# print("Passing venues:")
+# print(set(venues_drink_pass))
 
-
-    # for food in venue["food"]:
-    #     print(f"Current food is: {food}")
-    #     else:
-    #         print(f"Banned for this food looks like: {banned_foods_dict[food]}")
-            # for user in banned_foods_dict[food]:
-            #     reason = f"There is nothing for {user} to eat."
-            #     result = copy.deepcopy(avoid_venue_dict)
-            #     result["name"] = venue["name"]
-            #     result["reason"].append(reason)
-            #     venues_food_fail.append(result)
-    #     if food not in banned_foods_dict.keys():
-            # print(f"Current food not in banned_foods")
-            # venues_food_pass.append(venue["name"])
             
 # print("Passing venues:")
 # print(set(venues_food_pass))
 # print("Failing venues:")
 # print(venues_food_fail)
     
-
-
-
-#    {
-#         "name": "El Cantina",
-#         "food": ["Mexican"],
-#         "drinks": ["Soft drinks", "Tequila", "Beer"]
-#     },
-
-
-#   {
-#         "name": "",
-#         "wont_eat": ["Bread", "Pasta"],
-#         "drinks": ["Vodka", "Gin", "Whisky", "Rum"]
-#     },
 
 
 #TODO - Warn user if a person entered is not in the users list

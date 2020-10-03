@@ -36,7 +36,7 @@ def validate_args(acceptable_args: List[str], actual_args: List[str]) -> List[st
     """"""
     if len(actual_args) == 0:
         print(
-            f"You must enter valid users to find venues for. Choose from: {acceptable_args} or type 'everyone' to take the whole team!"
+            f"You must enter valid users to find venues for. Choose from: {acceptable_args} or type 'everyone' to take the whole team - don't forget the single quotes!"
         )
         sys.exit(2)
     for arg in actual_args:
@@ -46,7 +46,7 @@ def validate_args(acceptable_args: List[str], actual_args: List[str]) -> List[st
             return actual_args
         if len(arg) == 0 or arg not in acceptable_args:
             print(
-                f"Sorry, {arg} is not a valid user. Choose from: {acceptable_args} or type 'everyone' to take the whole team!"
+                f"Sorry, that is not a valid user. Choose from: {acceptable_args} or type 'everyone' to take the whole team - don't forget the single quotes!"
             )
             sys.exit(2)
         return actual_args
@@ -129,7 +129,6 @@ def evaluate_venues_for_food_suitability(
 
     # Filter venues by foods first
     for venue in all_venues:
-
 
         # Foods from the venue left over after subtracting the banned foods
         acceptable_foods = [

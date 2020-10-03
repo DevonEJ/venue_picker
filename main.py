@@ -81,8 +81,6 @@ def create_preferred_drinks_dict(desired_key: str, desired_value: str, args: Dic
 
 
 
-
-# FOR EACH VENUE, NEEDS TO BE USED FOR BOTH DRINKS AND FOOD
 def create_empty_venue_result_dict() -> Dict[str, Any]:
     avoid_venue_dict = {
         "name": "",
@@ -140,16 +138,21 @@ def evaluate_venues_for_food(banned_foods_dict: Dict[str, List[str]], preferred_
     return venues_failing, venues_drink_pass, venues_food_pass
 
 
-def create_response():
+def create_response(venues_passing_food: List[str], venues_passing_drink: List[str], failing_venues: List[Dict[str, Any]]) -> json:
     """
     """
+    passing_venues = list(set(venues_passing_food) & set(venues_passing_drink))
+
+    venues_response = {"places_to_visit": passing_venues,
+                    "places_to_avoid": failing_venues}
+
+    venues_response_json = json.dumps(venues_response)
+
+    return venues_response
+
+
+
     
-
-
-
-# #passing_venues = venues_drink_pass.intersection(venues_food_pass)
-# passing_venues = list(set(venues_drink_pass) & set(venues_food_pass))
-# print(passing_venues)
 
 
 # print("Failing venues:")
@@ -189,19 +192,8 @@ if __name__ == "__main__":
 
     failing_venues, venues_drinks_pass, venues_food_pass = evaluate_venues_for_food(banned_foods_dict, preferred_drinks_dict, all_venues, filtered_users)
 
+    response = create_response(venues_food_pass, venues_drinks_pass, failing_venues)
 
-
-
-    print(failing_venues)
-    print(venues_drinks_pass)
-    print(venues_food_pass)
-
-
-
-    venues_response = {"places_to_visit": [],
-                    "places_to_avoid":[]}
-                
-
-
+    print(json.dumps(response, indent=3))
 
     print("Done.")

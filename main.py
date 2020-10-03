@@ -184,6 +184,8 @@ if __name__ == "__main__":
 
     all_venues = retrieve_json_from_file("./data/venues.json", "food")
 
+    # print(all_venues)
+
     user_names = [user["name"] for user in all_users]
 
     args = sys.argv[1:]
@@ -192,10 +194,12 @@ if __name__ == "__main__":
 
     filtered_users = filter_users_by_name(args, all_users)
 
+    print(filtered_users)
+
     banned_foods_dict = create_banned_foods_dict("wont_eat", "name", args, all_users, filtered_users)
 
     # print("Banned foods:")
-    # print(banned_foods_dict)
+    print(banned_foods_dict)
 
     preferred_drinks_dict = create_preferred_drinks_dict("drinks", "name", args, all_users, filtered_users)
 
@@ -207,21 +211,18 @@ if __name__ == "__main__":
     # failing_venues, venues_drinks_pass, venues_food_pass = 
     failing_venues_reasons_dict, venues_passing_food = evaluate_venues_for_food_suitability(banned_foods_dict, all_venues, failing_venues_reasons_dict, filtered_users)
 
+    print(failing_venues_reasons_dict)
+    print(venues_passing_food)
 
     failing_venues_reasons_dict, venues_passing_drink = evaluate_venues_for_drink_suitability(preferred_drinks_dict, all_venues, failing_venues_reasons_dict, filtered_users)
 
 
-
    # print(failing_venues_reasons_dict)
-    print(venues_passing_drink)
-    print(venues_passing_food)
+    # print(venues_passing_drink)
+    # print(venues_passing_food)
 
-
-    # print(venues_drinks_pass)
-    # print(venues_food_pass)
-    # print(failing_venues)
 
     response = create_response(venues_passing_food, venues_passing_drink, failing_venues_reasons_dict)
 
-    print(json.dumps(response, indent=3))
+    # print(json.dumps(response, indent=3))
 

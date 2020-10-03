@@ -43,6 +43,7 @@ def filter_users_by_name(names: List[str], users: Dict[str, Any]) -> Dict[str, A
     return filtered_users
 
 
+#TODO - These could probably be the same function - just think about variable naming
 
 def create_banned_foods_dict(desired_key: str, desired_value: str, args: Dict[str, Any], all_users: Dict[str, Any], filtered_users: Dict[str, Any]) -> Dict[str, List[str]]:
     """
@@ -80,62 +81,26 @@ def create_preferred_drinks_dict(desired_key: str, desired_value: str, args: Dic
 
 
 
-# # SORT OUT THE FOODS
-# # Get what they won't eat
-# banned_foods = [[food for food in user["wont_eat"]] for user in all_users if user["name"] in args] 
-# banned_foods_flattened = list(chain.from_iterable(banned_foods))
-
-# # Create dict to map banned foods to team members
-# banned_foods_dict = {food: [] for food in banned_foods_flattened}
-
-# for user, details in filtered_users.items():
-#     for food in details["wont_eat"]:
-#         if food in banned_foods_flattened:
-#             banned_foods_dict[food].append(user)
-
-    
-
-# # SORT OUT THE DRINKS
-# # Get their favourite drinks
-# preferred_drinks = [[drink for drink in user["drinks"]] for user in all_users if user["name"] in args] 
-# preferred_drinks_flattened = list(chain.from_iterable(preferred_drinks))
-
-# # Create dict to map drink preferences to team members
-# preferred_drinks_dict = {drink: [] for drink in preferred_drinks_flattened}
-
-# for user, details in filtered_users.items():
-#     for drink in details["drinks"]:
-#         if drink in preferred_drinks_flattened:
-#             preferred_drinks_dict[drink].append(user)
 
 
+venues_food_pass = [] 
+venues_drink_pass = [] 
+venues_failing = []
+# Filter venues by foods first
+for venue in all_venues:
 
-# venues_response = {"places_to_visit": [],
-#                     "places_to_avoid":[]}
+    venue_result = copy.deepcopy(avoid_venue_dict)
 
-# avoid_venue_dict = {
-#     "name": "",
-#     "reason": []
-# }
+    problem_foods = list(set(venue["food"]) & set(banned_foods_dict.keys()))
 
-# venues_food_pass = [] 
-# venues_drink_pass = [] 
-# venues_failing = []
-# # Filter venues by foods first
-# for venue in all_venues:
-
-#     venue_result = copy.deepcopy(avoid_venue_dict)
-
-#     problem_foods = list(set(venue["food"]) & set(banned_foods_dict.keys()))
-
-#     if len(problem_foods) > 0:
-#         for food in problem_foods:
-#             for user in banned_foods_dict[food]:
-#                 reason = f"There is nothing for {user} to eat."
-#                 venue_result["name"] = venue["name"]
-#                 venue_result["reason"].append(reason)
-#         else:
-#             venues_food_pass.append(venue["name"])
+    if len(problem_foods) > 0:
+        for food in problem_foods:
+            for user in banned_foods_dict[food]:
+                reason = f"There is nothing for {user} to eat."
+                venue_result["name"] = venue["name"]
+                venue_result["reason"].append(reason)
+        else:
+            venues_food_pass.append(venue["name"])
 
 
 #     # First eliminate drinks that none of the users want to drink
@@ -199,6 +164,15 @@ if __name__ == "__main__":
 
     preferred_drinks_dict = create_preferred_drinks_dict("drinks", "name", args, all_users, filtered_users)
     print(preferred_drinks_dict)
+
+
+    venues_response = {"places_to_visit": [],
+                    "places_to_avoid":[]}
+
+    avoid_venue_dict = {
+        "name": "",
+        "reason": []
+    }
 
 
     print("Done.")

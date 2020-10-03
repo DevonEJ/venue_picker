@@ -74,23 +74,58 @@ avoid_venue_dict = {
 
 venues_food_pass = [] 
 venues_food_fail = [] 
-# Filter venues by drinks first
+# Filter venues by foods first
 for venue in all_venues:
-    for food in venue["food"]:
-        if food not in banned_foods_dict.keys():
-            venues_food_pass.append(venue["name"])
-        else:
+
+    venue_foods = set(venue["food"])
+
+    problem_foods = venue_foods.intersection(set(banned_foods_dict.keys()))
+
+    if len(problem_foods) > 0:
+        for food in problem_foods:
             for user in banned_foods_dict[food]:
                 reason = f"There is nothing for {user} to eat."
+                print(reason)
                 result = copy.deepcopy(avoid_venue_dict)
                 result["name"] = venue["name"]
                 result["reason"].append(reason)
                 venues_food_fail.append(result)
-            
+        else:
+            print(f"Current food not in banned_foods")
+            venues_food_pass.append(venue["name"])
 
-print(set(venues_food_pass))
+
+    # venue_drinks = set(venue["drinks"])
+
+    # problem_foods = venue_foods.intersection(set(banned_foods_dict.keys()))
+
+
 
 print(venues_food_fail)
+print("Passing venues:")
+print(set(venues_food_pass))
+
+
+
+
+    # for food in venue["food"]:
+    #     print(f"Current food is: {food}")
+    #     else:
+    #         print(f"Banned for this food looks like: {banned_foods_dict[food]}")
+            # for user in banned_foods_dict[food]:
+            #     reason = f"There is nothing for {user} to eat."
+            #     result = copy.deepcopy(avoid_venue_dict)
+            #     result["name"] = venue["name"]
+            #     result["reason"].append(reason)
+            #     venues_food_fail.append(result)
+    #     if food not in banned_foods_dict.keys():
+            # print(f"Current food not in banned_foods")
+            # venues_food_pass.append(venue["name"])
+            
+# print("Passing venues:")
+# print(set(venues_food_pass))
+# print("Failing venues:")
+# print(venues_food_fail)
     
 
 

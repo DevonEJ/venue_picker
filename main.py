@@ -44,10 +44,39 @@ def filter_users_by_name(names: List[str], users: Dict[str, Any]) -> Dict[str, A
 
 
 
+def create_banned_foods_dict(desired_key: str, desired_value: str, args: Dict[str, Any], all_users: Dict[str, Any], filtered_users: Dict[str, Any]) -> Dict[str, List[str]]:
+    """
+    """
+    banned_foods = [[food for food in user[desired_key]] for user in all_users if user["name"] in args] 
+    banned_foods_flattened = list(chain.from_iterable(banned_foods))
+
+    # Create dict to map banned foods to team members
+    banned_foods_dict = {food: [] for food in banned_foods_flattened}
+
+    for user, details in filtered_users.items():
+        for food in details["wont_eat"]:
+            if food in banned_foods_flattened:
+                banned_foods_dict[food].append(user)
+
+    return banned_foods_dict
 
 
 
+def create_preferred_drinks_dict(desired_key: str, desired_value: str, args: Dict[str, Any], all_users: Dict[str, Any], filtered_users: Dict[str, Any]) -> Dict[str, List[str]]:
+    """
+    """
+    preferred_drinks = [[drink for drink in user["drinks"]] for user in all_users if user["name"] in args] 
+    preferred_drinks_flattened = list(chain.from_iterable(preferred_drinks))
 
+    # Create dict to map drink preferences to team members
+    preferred_drinks_dict = {drink: [] for drink in preferred_drinks_flattened}
+
+    for user, details in filtered_users.items():
+        for drink in details["drinks"]:
+            if drink in preferred_drinks_flattened:
+                preferred_drinks_dict[drink].append(user)
+
+    return preferred_drinks_dict
 
 
 
@@ -165,6 +194,11 @@ if __name__ == "__main__":
 
     print(filtered_users)
 
+    banned_foods_dict = create_banned_foods_dict("wont_eat", "name", args, all_users, filtered_users)
+    print(banned_foods_dict)
+
+    preferred_drinks_dict = create_preferred_drinks_dict("drinks", "name", args, all_users, filtered_users)
+    print(preferred_drinks_dict)
 
 
     print("Done.")

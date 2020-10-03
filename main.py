@@ -204,21 +204,21 @@ if __name__ == "__main__":
     preferred_drinks_dict = create_preferred_drinks_dict("drinks", "name", args, all_users, filtered_users)
 
     # print("preferred drinks:")
-    # print(preferred_drinks_dict)
+    print(preferred_drinks_dict)
 
     failing_venues_reasons_dict = {}
 
     # failing_venues, venues_drinks_pass, venues_food_pass = 
     failing_venues_reasons_dict, venues_passing_food = evaluate_venues_for_food_suitability(banned_foods_dict, all_venues, failing_venues_reasons_dict, filtered_users)
 
-    print(failing_venues_reasons_dict)
-    print(venues_passing_food)
+    # print(failing_venues_reasons_dict)
+    # print(venues_passing_food)
 
     failing_venues_reasons_dict, venues_passing_drink = evaluate_venues_for_drink_suitability(preferred_drinks_dict, all_venues, failing_venues_reasons_dict, filtered_users)
 
 
-   # print(failing_venues_reasons_dict)
-    # print(venues_passing_drink)
+    print(failing_venues_reasons_dict)
+    print(venues_passing_drink)
     # print(venues_passing_food)
 
 

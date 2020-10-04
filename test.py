@@ -271,8 +271,9 @@ def test_evaluate_venues_for_drink_suitability_pass(
                 "El Cantina": ["There is nothing for Karol Drewno to drink."],
                 "Tally Joe": ["There is nothing for Karol Drewno to drink."],
                 "Fabrique": [
-                    "There is nothing for Karol Drewno to drink.",
                     "There is nothing for Wen Li to drink.",
+                    "There is nothing for Karol Drewno to drink."
+                    ,
                 ],
             },
         )
@@ -295,4 +296,7 @@ def test_combined_evaluate_venues_for_drink_and_food_suitability_pass(
         banned_foods_dict, all_venues, failing_venues_dict, filtered_users
     )
 
-    assert failing_venues_reasons_dict == expected_failing_venues_dict
+    assert list(failing_venues_reasons_dict.keys()) == list(expected_failing_venues_dict.keys())
+
+    for key, value in failing_venues_reasons_dict.items():
+        assert value.sort() == expected_failing_venues_dict[key].sort()

@@ -44,8 +44,10 @@ def retrieve_json_from_file(file_path: str, keys: List[str], expected_record_cou
                 row = clean_input(row, keys)
                 clean_data.append(row)
             inputs.close()
+            # Check record count against expected
             assert len(clean_data) == expected_record_count, f"Got {len(clean_data)} records, expected {expected_record_count}"
             return clean_data
+    # Catch exceptions with data validation, or reading from input files
     except Exception as e:
         print(f"An error occurred reading file at file path {file_path}: {e}")
         sys.exit(2)
@@ -62,6 +64,7 @@ def validate_args(acceptable_args: List[str], actual_args: List[str]) -> List[st
     Returns:
         List[str]: Validated args.
     """
+    # If no args provided, print error prompt and exit
     if len(actual_args) == 0:
         print(
             f"You must enter valid users to find venues for. Choose from: {acceptable_args} or type 'everyone' to take the whole team - don't forget the single quotes!"
@@ -69,9 +72,11 @@ def validate_args(acceptable_args: List[str], actual_args: List[str]) -> List[st
         sys.exit(2)
     for arg in actual_args:
         arg = arg.strip()
+        # If 'everyone' given as arg, include all possible users
         if arg == "everyone":
             actual_args = acceptable_args
             return actual_args
+        # If arg is empty, or an invalid arg provided, print error prompt and exit
         if len(arg) == 0 or arg not in acceptable_args:
             print(
                 f"Sorry, that is not a valid user. Choose from: {acceptable_args} or type 'everyone' to take the whole team - don't forget the single quotes!"

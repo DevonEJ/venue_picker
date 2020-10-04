@@ -6,8 +6,10 @@ from itertools import chain
 from typing import Dict, List, Any, Tuple
 
 
-def clean_input(input_dict: Dict[str, List[str]], keys: List[str]) -> Dict[str, List[str]]:
-    """Given a dictionary and a list of dictionary keys, function lower cases 
+def clean_input(
+    input_dict: Dict[str, List[str]], keys: List[str]
+) -> Dict[str, List[str]]:
+    """Given a dictionary and a list of dictionary keys, function lower cases
     dictionary values (which should be lists of strings) corresponding to those keys.
 
     Args:
@@ -23,8 +25,10 @@ def clean_input(input_dict: Dict[str, List[str]], keys: List[str]) -> Dict[str, 
     return input_dict
 
 
-def retrieve_json_from_file(file_path: str, keys: List[str], expected_record_count: int) -> List[Dict]:
-    """Reads list of JSON objects into a list of dictionaries, and applies lower casing and record 
+def retrieve_json_from_file(
+    file_path: str, keys: List[str], expected_record_count: int
+) -> List[Dict]:
+    """Reads list of JSON objects into a list of dictionaries, and applies lower casing and record
     count checks.
 
     Args:
@@ -45,7 +49,9 @@ def retrieve_json_from_file(file_path: str, keys: List[str], expected_record_cou
                 clean_data.append(row)
             inputs.close()
             # Check record count against expected
-            assert len(clean_data) == expected_record_count, f"Got {len(clean_data)} records, expected {expected_record_count}"
+            assert (
+                len(clean_data) == expected_record_count
+            ), f"Got {len(clean_data)} records, expected {expected_record_count}"
             return clean_data
     # Catch exceptions with data validation, or reading from input files
     except Exception as e:
@@ -64,10 +70,11 @@ def validate_args(acceptable_args: List[str], actual_args: List[str]) -> List[st
     Returns:
         List[str]: Validated args.
     """
-    # If no args provided, print error prompt and exit
+    #  If no args provided, print error prompt and exit
     if len(actual_args) == 0:
         print(
-            f"You must enter valid users to find venues for. Choose from: {acceptable_args} or type 'everyone' to take the whole team - don't forget the single quotes!"
+            f"You must enter valid users to find venues for. Choose from: {acceptable_args} or\
+             type 'everyone' to take the whole team - don't forget the single quotes!"
         )
         sys.exit(2)
     for arg in actual_args:
@@ -79,13 +86,16 @@ def validate_args(acceptable_args: List[str], actual_args: List[str]) -> List[st
         # If arg is empty, or an invalid arg provided, print error prompt and exit
         if len(arg) == 0 or arg not in acceptable_args:
             print(
-                f"Sorry, that is not a valid user. Choose from: {acceptable_args} or type 'everyone' to take the whole team - don't forget the single quotes!"
+                f"Sorry, that is not a valid user. Choose from: {acceptable_args} or type\
+                 'everyone' to take the whole team - don't forget the single quotes!"
             )
             sys.exit(2)
         return actual_args
 
 
-def filter_users_by_name(names: List[str], users: List[Dict[str, Any]]) -> Dict[str, Dict]:
+def filter_users_by_name(
+    names: List[str], users: List[Dict[str, Any]]
+) -> Dict[str, Dict]:
     """Filters users dictionary to only include those users named in the names argument,
     and re-formats the dict into a shallower structure, with user names as keys.
 
@@ -114,7 +124,7 @@ def create_banned_foods_dict(
     """Invert users dictionary to have foods as keys mapped to user's names.
 
     Args:
-        desired_key (str): Value in input user dictionary that will become dictionary 
+        desired_key (str): Value in input user dictionary that will become dictionary
         key in output dictionary.
         args (List[str]): List of user names to include in output.
         all_users (List[Dict[str, Any]]): List of dictionaries for all users.
@@ -151,7 +161,7 @@ def create_preferred_drinks_dict(
     """Invert users dictionary to have drinks as keys mapped to user's names.
 
     Args:
-        desired_key (str): Value in input user dictionary that will become dictionary 
+        desired_key (str): Value in input user dictionary that will become dictionary
         key in output dictionary.
         args (List[str]): List of user names to include in output.
         all_users (List[Dict[str, Any]]): List of dictionaries for all users.
@@ -225,12 +235,13 @@ def evaluate_venues_for_drink_suitability(
     preferred_drinks_dict: Dict[str, Any],
     all_venues: List[Dict[str, Any]],
     failing_venues_reasons_dict: Dict[str, Any],
-    filtered_users: Dict[str, Any]) -> Tuple[List[Dict], List[str]]:
+    filtered_users: Dict[str, Any],
+) -> Tuple[List[Dict], List[str]]:
     """For each venue, checks if all users will drink at least one of their drink options.
      Outputs results of this evaluation.
 
     Args:
-        preferred_drinks_dict (Dict[str, List[str]]): Dictionary mapping preferred drinks 
+        preferred_drinks_dict (Dict[str, List[str]]): Dictionary mapping preferred drinks
         to users preferrering them.
         all_venues (List[Dict[str, Any]]): Dictionary of all available venues.
         failing_venues_reasons_dict (Dict[str, Any]): Dictionary to hold failing venues and their reasons.
@@ -245,7 +256,9 @@ def evaluate_venues_for_drink_suitability(
     for venue in all_venues:
         # First filter out drinks that none of the users want to drink
         venue_drinks = [
-            drink for drink in venue["drinks"] if drink in list(preferred_drinks_dict.keys())
+            drink
+            for drink in venue["drinks"]
+            if drink in list(preferred_drinks_dict.keys())
         ]
         names = []
         for drink in venue_drinks:
@@ -280,7 +293,7 @@ def create_response(
     Args:
         venues_passing_food (List[str]): Venues passing food evaluation.
         venues_passing_drink (List[str]): Venues passing drink evaluation.
-        failing_venues (List[Dict[str, Any]]): Venues failing food and/or drink evaluation, 
+        failing_venues (List[Dict[str, Any]]): Venues failing food and/or drink evaluation,
         and their reasons.
 
     Returns:
